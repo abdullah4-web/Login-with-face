@@ -5,6 +5,9 @@ import { Sun, Moon } from 'react-feather';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
 import Webcam from 'react-webcam';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -13,6 +16,8 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('darkMode');
@@ -69,8 +74,7 @@ const SignUp = () => {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Registration successful!');
-        navigate('/signin');
+        setSuccessModalOpen(true);
       } else {
         throw new Error(result.message || 'Registration failed');
       }
@@ -82,10 +86,15 @@ const SignUp = () => {
     }
   };
 
+  const closeSuccessModal = () => {
+    setSuccessModalOpen(false);
+    navigate('/signin');
+  };
+
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl dark:shadow-gray-700/50">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+        <div className="w-full max-w-md bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl dark:shadow-gray-700/50">
           
           {/* Dark Mode Toggle */}
           <div className="flex justify-end mb-4">
@@ -95,7 +104,7 @@ const SignUp = () => {
           </div>
 
           <h2 className="text-center text-2xl font-bold text-gray-800 dark:text-white mb-6">
-            Face Registration Using Python and React
+            Face Unlock Using Python and React
           </h2>
 
           {error && (
@@ -105,20 +114,19 @@ const SignUp = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-           
-
-            {/* Webcam Circular Frame */}
+            {/* Webcam */}
             <div className="flex justify-center">
               <Webcam
                 audio={false}
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
                 videoConstraints={{ width: 300, height: 300, facingMode: 'user' }}
-                className="rounded-full border-4 border-indigo-500 w-48 h-48 object-cover"
+                className="rounded-full border-4 border-indigo-500 w-40 h-40 sm:w-48 sm:h-48 object-cover"
               />
             </div>
-             <div>
+
+            {/* Name */}
+            <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-1">Full Name</label>
               <div className="relative">
                 <AiOutlineUser className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
@@ -132,7 +140,8 @@ const SignUp = () => {
                 />
               </div>
             </div>
-            {/* Submit Button */}
+
+            {/* Submit */}
             <div>
               <button
                 type="submit"
@@ -151,6 +160,23 @@ const SignUp = () => {
             </Link>
           </div>
         </div>
+
+        {/* Success Modal */}
+        <Modal
+          isOpen={successModalOpen}
+          onRequestClose={closeSuccessModal}
+          className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-auto mt-32 shadow-lg"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+        >
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Registration Successful!</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">You can now sign in with your face.</p>
+          <button
+            onClick={closeSuccessModal}
+            className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition duration-200"
+          >
+            Go to Sign In
+          </button>
+        </Modal>
       </div>
     </GoogleOAuthProvider>
   );

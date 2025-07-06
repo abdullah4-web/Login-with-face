@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AiOutlineUser } from 'react-icons/ai';
 import { Sun, Moon } from 'react-feather';
 import Webcam from 'react-webcam';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 
 const SignIn = () => {
   const webcamRef = useRef(null);
@@ -11,6 +14,8 @@ const SignIn = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('darkMode');
@@ -66,9 +71,8 @@ const SignIn = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Login successful!');
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/create');
+        setSuccessModalOpen(true); // Show modal instead of alert
       } else {
         throw new Error(data.message || 'Login failed');
       }
@@ -80,8 +84,13 @@ const SignIn = () => {
     }
   };
 
+  const closeSuccessModal = () => {
+    setSuccessModalOpen(false);
+    navigate('/create');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg dark:shadow-gray-700/50 transition-all duration-300">
         
         {/* Dark Mode Toggle */}
@@ -96,7 +105,7 @@ const SignIn = () => {
         </div>
 
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Face Login</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Face Unlock Login</h2>
           <p className="text-gray-600 dark:text-gray-300">
             Don’t have an account?{' '}
             <Link
@@ -108,7 +117,6 @@ const SignIn = () => {
           </p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-lg">
             {error}
@@ -116,19 +124,19 @@ const SignIn = () => {
         )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* Username Field */}
-       
           {/* Webcam */}
           <div className="flex justify-center">
             <Webcam
               audio={false}
               ref={webcamRef}
               screenshotFormat="image/jpeg"
-              className="rounded-full border-4 border-indigo-600 w-48 h-48 object-cover"
+              className="rounded-full border-4 border-indigo-600 w-40 h-40 sm:w-48 sm:h-48 object-cover"
               videoConstraints={{ width: 300, height: 300, facingMode: 'user' }}
             />
           </div>
-           <div>
+
+          {/* Username */}
+          <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Username
             </label>
@@ -159,6 +167,23 @@ const SignIn = () => {
           </div>
         </form>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={successModalOpen}
+        onRequestClose={closeSuccessModal}
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-auto mt-32 shadow-lg"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      >
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Login Successful!</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">Welcome back, {username}!</p>
+        <button
+          onClick={closeSuccessModal}
+          className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition duration-200"
+        >
+          Continue
+        </button>
+      </Modal>
     </div>
   );
 };
